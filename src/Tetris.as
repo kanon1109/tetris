@@ -77,7 +77,7 @@ public class Tetris
 	private function checkLeft():Boolean
 	{
 		if (!this.tetrominoesVo) return false;
-		if (this.tetrominoesVo.posX - 1 < 0)
+		if (this.tetrominoesVo.posX + this.tetrominoesVo.left - 1 < 0)
 			return false;
 		return true;
 	}
@@ -133,7 +133,9 @@ public class Tetris
 	 */
 	public function rotation():void
 	{
-		
+		if (!this.tetrominoesVo) return;
+		this.tetrominoesVo.dir++;
+		this.updateTetrominoes(this.tetrominoesVo);
 	}
 	
 	/**

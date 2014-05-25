@@ -13,11 +13,13 @@ public class TetrominoesVo
 	//宽度（横向最大格子数量）
 	public var width:int;
 	//高度（纵向最大格子数量）
-	public var height:int;	
+	public var height:int;
+	//左边第一个有格子的位置
+	public var left:int;
 	//当前方块类型
 	public var type:int;
 	//当前方向
-	public var dir:int;
+	private var _dir:int;
 	//方块地图数组
 	private var tetrominoesAry:Array;
 	//当前方块地图数组
@@ -33,6 +35,7 @@ public class TetrominoesVo
 		//凸字形4个方向
 		this.tetrominoesAry[1] = [
 								[[0, 0, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]], 
+								[[0, 1, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
 								[[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
 								[[0, 1, 0, 0], [0, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]]
 								];
@@ -95,6 +98,8 @@ public class TetrominoesVo
 			if (dir > arr.length - 1) dir = arr.length - 1;
 			this.width = this.getWidth(arr[dir]);
 			this.height = this.getHeight(arr[dir]);
+			this.left = this.getLeft(arr[dir]);
+			trace("this.left", this.left);
 			return arr[dir];
 		}
 		return null;
@@ -156,12 +161,54 @@ public class TetrominoesVo
 	}
 	
 	/**
+	 * 获取左边数据为1的索引
+	 * @param	arr  方块数据
+	 * @return	左边索引
+	 */
+	private function getLeft(arr:Array):int
+	{
+		if (!arr) return 0;
+		var length:int = arr.length;
+		var minIndex:int = arr[0].length;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			var rowAry:Array = arr[i];
+			var len:int = rowAry.length;
+			var index:int = len;
+			for (var j:int = 0; j < len; j += 1) 
+			{
+				if (rowAry[j] == 1)
+				{
+					index = j;
+					break;
+				}
+			}
+			trace("index", index);
+			if (index < minIndex)
+				minIndex = index;
+		}
+		return minIndex;
+	}
+	
+	/**
 	 * 获取方块数据
 	 * @return	方块数组
 	 */
 	public function getTetrominoe():Array
 	{
-		return this.getTetrominoeByDir(this.dir);
+		return this.getTetrominoeByDir(this._dir);
+	}
+	
+	/**
+	 * 设置方向
+	 */
+	public function get dir():int{ return _dir; }
+	public function set dir(value:int):void 
+	{
+		_dir = value;
+		var arr:Array = this.getTetrominoeByType(this.type);
+		if (this._dir < 0) this._dir = arr.length - 1;
+		if (this._dir > arr.length - 1) this._dir = 0;
 	}
 }
 }
