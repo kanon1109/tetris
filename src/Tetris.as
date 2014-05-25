@@ -94,6 +94,8 @@ public class Tetris
 		return true;
 	}
 	
+	
+	/******************public**********************************/
 	/**
 	 * 向下
 	 */
@@ -124,6 +126,14 @@ public class Tetris
 		if (!this.checkRight()) return;
 		this.tetrominoesVo.posX++;
 		this.updateTetrominoes(this.tetrominoesVo);
+	}
+	
+	/**
+	 * 旋转
+	 */
+	public function rotation():void
+	{
+		
 	}
 	
 	/**

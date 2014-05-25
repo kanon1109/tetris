@@ -54,6 +54,10 @@ public class TetrisTest extends Sprite
 				this.tetris.right();
 				this.draw();
 				break;
+			case Keyboard.W:
+				this.tetris.rotation();
+				this.draw();
+				break;
 		}
 	}
 	
