@@ -74,7 +74,7 @@ public class Tetris
 	 * 判断左边界
 	 * @return	是否再移动一步到边界
 	 */
-	private function checkLeft():Boolean
+	private function checkLeftRange():Boolean
 	{
 		if (!this.tetrominoesVo) return false;
 		if (this.tetrominoesVo.posX + this.tetrominoesVo.left - 1 < 0)
@@ -86,14 +86,13 @@ public class Tetris
 	 * 判断右边界
 	 * @return	是否再移动一步到边界
 	 */
-	private function checkRight():Boolean
+	private function checkRightRange():Boolean
 	{
 		if (!this.tetrominoesVo) return false;
 		if (this.tetrominoesVo.posX + this.tetrominoesVo.width + 1 > this.rows)
 			return false
 		return true;
 	}
-	
 	
 	/******************public**********************************/
 	/**
@@ -112,7 +111,7 @@ public class Tetris
 	public function left():void
 	{
 		if (!this.tetrominoesVo) return;
-		if (!this.checkLeft()) return;
+		if (!this.checkLeftRange()) return;
 		this.tetrominoesVo.posX--;
 		this.updateTetrominoes(this.tetrominoesVo);
 	}
@@ -123,7 +122,7 @@ public class Tetris
 	public function right():void
 	{
 		if (!this.tetrominoesVo) return;
-		if (!this.checkRight()) return;
+		if (!this.checkRightRange()) return;
 		this.tetrominoesVo.posX++;
 		this.updateTetrominoes(this.tetrominoesVo);
 	}
@@ -136,6 +135,24 @@ public class Tetris
 		if (!this.tetrominoesVo) return;
 		this.tetrominoesVo.dir++;
 		this.updateTetrominoes(this.tetrominoesVo);
+		if (this.tetrominoesVo.posX + this.tetrominoesVo.left < 0)
+		{
+			trace("左边超过")
+			//左边有数据（色块）的位置
+			//如果旋转后位置超过边界则加上相差的位置 并重新渲染
+			this.tetrominoesVo.posX += 
+				Math.abs(this.tetrominoesVo.posX + this.tetrominoesVo.left);
+			this.updateTetrominoes(this.tetrominoesVo);
+		}
+		if (this.tetrominoesVo.posX + this.tetrominoesVo.width > this.rows)
+		{
+			trace("左边超过")
+			//左边有数据（色块）的位置
+			//如果旋转后位置超过边界则加上相差的位置 并重新渲染
+			this.tetrominoesVo.posX -= 
+				Math.abs(this.rows - (this.tetrominoesVo.posX + this.tetrominoesVo.width));
+			this.updateTetrominoes(this.tetrominoesVo);
+		}
 	}
 	
 	/**

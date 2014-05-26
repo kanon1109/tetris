@@ -37,7 +37,7 @@ public class TetrisTest extends Sprite
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
 		this.tetris = new Tetris(12, 18);
-		this.tetris.createTetrominoesVo(1);
+		this.tetris.createTetrominoesVo(3);
 		this.tetris.update();
 		this.draw();
 	}

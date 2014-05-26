@@ -99,7 +99,6 @@ public class TetrominoesVo
 			this.width = this.getWidth(arr[dir]);
 			this.height = this.getHeight(arr[dir]);
 			this.left = this.getLeft(arr[dir]);
-			trace("this.left", this.left);
 			return arr[dir];
 		}
 		return null;
@@ -161,7 +160,7 @@ public class TetrominoesVo
 	}
 	
 	/**
-	 * 获取左边数据为1的索引
+	 * 获取方块数组最左边数据为1的索引
 	 * @param	arr  方块数据
 	 * @return	左边索引
 	 */
@@ -183,7 +182,6 @@ public class TetrominoesVo
 					break;
 				}
 			}
-			trace("index", index);
 			if (index < minIndex)
 				minIndex = index;
 		}
