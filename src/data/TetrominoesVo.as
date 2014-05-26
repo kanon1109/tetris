@@ -14,40 +14,42 @@ public class TetrominoesVo
 	public var width:int;
 	//高度（纵向最大格子数量）
 	public var height:int;
-	//左边第一个有格子的位置
+	//左边第一个有数据（颜色）的格子位置
 	public var left:int;
+	//顶部第一个有数据（颜色）的格子位置
+	public var top:int;
 	//当前方块类型
 	public var type:int;
 	//当前方向
 	private var _dir:int;
 	//方块地图数组
-	private var tetrominoesAry:Array;
-	//当前方块地图数组
-	private var map:Array;
+	private var tetrominoesModelList:Array;
+	//当前方向方格的数据
+	private var _map:Array;
 	public function TetrominoesVo() 
 	{
-		this.tetrominoesAry = [];
+		this.tetrominoesModelList = [];
 		//长形2个方向
-		this.tetrominoesAry[0] = [
+		this.tetrominoesModelList[0] = [
 								[[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], 
 								[[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0]]
 								];
 		//凸字形4个方向
-		this.tetrominoesAry[1] = [
+		this.tetrominoesModelList[1] = [
 								[[0, 0, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]], 
 								[[0, 1, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]],
 								[[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
 								[[0, 1, 0, 0], [0, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]]
 								];
 		//L字形4个方向
-		this.tetrominoesAry[2] = [
+		this.tetrominoesModelList[2] = [
 								[[0, 0, 0, 0], [1, 1, 1, 0], [1, 0, 0, 0], [0, 0, 0, 0]], 
 								[[1, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]], 
 								[[0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 
 								[[0, 0, 1, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]]
 								]
 		//反向L字形4个方向						
-		this.tetrominoesAry[3] = [
+		this.tetrominoesModelList[3] = [
 								[[1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 
 								[[0, 1, 1, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]], 
 								[[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 1, 0], [0, 0, 0, 0]], 
@@ -55,19 +57,19 @@ public class TetrominoesVo
 								]
 								
 		//Z字形2个方向				
-		this.tetrominoesAry[4] = [
+		this.tetrominoesModelList[4] = [
 								[[0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]], 
 								[[0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]]
 								]
 								
 		//反Z字形2个方向				
-		this.tetrominoesAry[5] = [
+		this.tetrominoesModelList[5] = [
 								[[0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0]], 
 								[[0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0], [0, 0, 0, 0]]
 								]
 								
 		//方形1个方向				
-		this.tetrominoesAry[6] = [
+		this.tetrominoesModelList[6] = [
 								[[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]] 
 								]
 	}
@@ -80,8 +82,8 @@ public class TetrominoesVo
 	private function getTetrominoeByType(type:int):Array
 	{
 		if (type < 0) type = 0;
-		if (type > this.tetrominoesAry.length - 1) type = this.tetrominoesAry.length - 1;
-		return this.tetrominoesAry[type];
+		if (type > this.tetrominoesModelList.length - 1) type = this.tetrominoesModelList.length - 1;
+		return this.tetrominoesModelList[type];
 	}
 	
 	/**
@@ -96,10 +98,12 @@ public class TetrominoesVo
 		{
 			if (dir < 0) dir = 0;
 			if (dir > arr.length - 1) dir = arr.length - 1;
-			this.width = this.getWidth(arr[dir]);
-			this.height = this.getHeight(arr[dir]);
-			this.left = this.getLeft(arr[dir]);
-			return arr[dir];
+			var mapAry:Array = arr[dir];
+			this.width = this.getWidth(mapAry);
+			this.height = this.getHeight(mapAry);
+			this.left = this.getLeft(mapAry);
+			this.top = this.getTop(mapAry);
+			return mapAry;
 		}
 		return null;
 	}
@@ -189,12 +193,31 @@ public class TetrominoesVo
 	}
 	
 	/**
-	 * 获取方块数据
-	 * @return	方块数组
+	 * 获取顶部第一个有数据（颜色）的格子位置
+	 * @param	arr	 方块数据
+	 * @return	顶部第一个有数据（颜色）的格子位置索引
 	 */
-	public function getTetrominoe():Array
+	private function getTop(arr:Array):int
 	{
-		return this.getTetrominoeByDir(this._dir);
+		if (!arr) return 0;
+		var len:int = arr.length;
+		var length:int = arr[0].length;
+		var minIndex:int = len;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			var index:int = len;
+			for (var j:int = 0; j < len; j += 1) 
+			{
+				if (arr[j][i] == 1)
+				{
+					index = j;
+					break;
+				}
+			}
+			if (index < minIndex)
+				minIndex = index;
+		}
+		return minIndex;
 	}
 	
 	/**
@@ -207,6 +230,12 @@ public class TetrominoesVo
 		var arr:Array = this.getTetrominoeByType(this.type);
 		if (this._dir < 0) this._dir = arr.length - 1;
 		if (this._dir > arr.length - 1) this._dir = 0;
+		this._map = this.getTetrominoeByDir(this._dir);
 	}
+	
+	/**
+	 * 当前方向方格的数据
+	 */
+	public function get map():Array{ return _map; }
 }
 }

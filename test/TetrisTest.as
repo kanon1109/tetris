@@ -28,7 +28,7 @@ public class TetrisTest extends Sprite
 		this.rectHeight = 20;
 		this.gap = 2;
 		//默认一秒钟
-		this.delay = 1000;
+		this.delay = 200;
 		
 		this.timer = new Timer(this.delay);
 		this.timer.addEventListener(TimerEvent.TIMER, timerHandler);
@@ -37,7 +37,7 @@ public class TetrisTest extends Sprite
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
 		this.tetris = new Tetris(12, 18);
-		this.tetris.createTetrominoesVo(3);
+		this.tetris.createTetrominoesVo(4);
 		this.tetris.update();
 		this.draw();
 	}

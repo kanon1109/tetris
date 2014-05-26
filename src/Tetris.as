@@ -55,16 +55,19 @@ public class Tetris
 	{
 		if (!vo) return;
 		this.clearMap();
-		var arr:Array = vo.getTetrominoe();
+		var arr:Array = vo.map;
+		var length:int = arr.length;
 		//遍历方块数据
-		for (var i:int = 0; i < arr.length; i += 1) 
+		for (var i:int = 0; i < length; i += 1) 
 		{
 			//横向数据
 			var rowAry:Array = arr[i];
-			for (var j:int = 0; j < rowAry.length; j += 1)
+			var len:int = rowAry.length;
+			for (var j:int = 0; j < len; j += 1)
 			{
 				//将有数据的位置设置到大地图上
-				if (this._map[vo.posY + i][vo.posX + j] != null)
+				if (this._map[vo.posY + i] != null &&
+					this._map[vo.posY + i][vo.posX + j] != null)
 					this._map[vo.posY + i][vo.posX + j] = rowAry[j];
 			}
 		}
@@ -76,10 +79,10 @@ public class Tetris
 	 */
 	private function checkLeftRange():Boolean
 	{
-		if (!this.tetrominoesVo) return false;
+		if (!this.tetrominoesVo) return true;
 		if (this.tetrominoesVo.posX + this.tetrominoesVo.left - 1 < 0)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 	
 	/**
@@ -88,10 +91,26 @@ public class Tetris
 	 */
 	private function checkRightRange():Boolean
 	{
+		if (!this.tetrominoesVo) return true;
+		if (this.tetrominoesVo.posX + 
+			this.tetrominoesVo.left + 
+			this.tetrominoesVo.width + 1 > this.rows)
+			return true
+		return false;
+	}
+	
+	/**
+	 * 判断是否出底界
+	 * @return	是否出底界
+	 */
+	private function checkDownRange():Boolean
+	{
 		if (!this.tetrominoesVo) return false;
-		if (this.tetrominoesVo.posX + this.tetrominoesVo.width + 1 > this.rows)
-			return false
-		return true;
+		if (this.tetrominoesVo.posY + 
+			this.tetrominoesVo.top + 
+			this.tetrominoesVo.height >= this.columns)
+			return true;
+		return false;
 	}
 	
 	/******************public**********************************/
@@ -103,6 +122,11 @@ public class Tetris
 		if (!this.tetrominoesVo) return;
 		this.tetrominoesVo.posY++;
 		this.updateTetrominoes(this.tetrominoesVo);
+		if (this.checkDownRange())
+		{
+			trace("checkDownRange");
+			this.createTetrominoesVo(4);
+		}
 	}
 	
 	/**
@@ -111,7 +135,7 @@ public class Tetris
 	public function left():void
 	{
 		if (!this.tetrominoesVo) return;
-		if (!this.checkLeftRange()) return;
+		if (this.checkLeftRange()) return;
 		this.tetrominoesVo.posX--;
 		this.updateTetrominoes(this.tetrominoesVo);
 	}
@@ -122,7 +146,7 @@ public class Tetris
 	public function right():void
 	{
 		if (!this.tetrominoesVo) return;
-		if (!this.checkRightRange()) return;
+		if (this.checkRightRange()) return;
 		this.tetrominoesVo.posX++;
 		this.updateTetrominoes(this.tetrominoesVo);
 	}
@@ -137,8 +161,7 @@ public class Tetris
 		this.updateTetrominoes(this.tetrominoesVo);
 		if (this.tetrominoesVo.posX + this.tetrominoesVo.left < 0)
 		{
-			trace("左边超过")
-			//左边有数据（色块）的位置
+			//左边变形时超过边界
 			//如果旋转后位置超过边界则加上相差的位置 并重新渲染
 			this.tetrominoesVo.posX += 
 				Math.abs(this.tetrominoesVo.posX + this.tetrominoesVo.left);
@@ -146,9 +169,7 @@ public class Tetris
 		}
 		if (this.tetrominoesVo.posX + this.tetrominoesVo.width > this.rows)
 		{
-			trace("左边超过")
-			//左边有数据（色块）的位置
-			//如果旋转后位置超过边界则加上相差的位置 并重新渲染
+			//右边变形时超过边界
 			this.tetrominoesVo.posX -= 
 				Math.abs(this.rows - (this.tetrominoesVo.posX + this.tetrominoesVo.width));
 			this.updateTetrominoes(this.tetrominoesVo);
@@ -164,7 +185,7 @@ public class Tetris
 		this.tetrominoesVo = new TetrominoesVo();
 		this.tetrominoesVo.type = type;
 		this.tetrominoesVo.dir = 0;
-		this.tetrominoesVo.posX = int((this.rows - this.tetrominoesVo.getTetrominoe().length) / 2);
+		this.tetrominoesVo.posX = int((this.rows - this.tetrominoesVo.map.length) / 2);
 		this.tetrominoesVo.posY = 0;
 	}
 	
