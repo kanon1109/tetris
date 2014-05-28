@@ -155,6 +155,37 @@ public class Tetris extends EventDispatcher
 		}
 	}
 	
+	/**
+	 * 判断下落时碰到其他节点
+	 * @param	vo	方块数据
+	 * @return	是否碰撞
+	 */
+	private function checkDownHit(vo:TetrominoesVo):Boolean
+	{
+		if (!vo) return false;
+		var arr:Array = vo.map;
+		var length:int = arr.length;
+		var node:NodeVo;
+		//遍历方块数据
+		for (var i:int = 0; i < length; i += 1) 
+		{
+			//横向数据
+			var rowAry:Array = arr[i];
+			var len:int = rowAry.length;
+			for (var j:int = 0; j < len; j += 1)
+			{
+				//将有数据的位置设置到大地图上
+				if (this._map[vo.posY + i + 1] != null &&
+					this._map[vo.posY + i + 1][vo.posX + j] != null)
+				{
+					node = this._map[vo.posY + i + 1][vo.posX + j];
+					
+				}
+			}
+		}
+		return false;
+	}
+	
 	/******************public**********************************/
 	/**
 	 * 向下
@@ -164,7 +195,8 @@ public class Tetris extends EventDispatcher
 		if (!this.tetrominoesVo) return;
 		this.tetrominoesVo.posY++;
 		this.updateTetrominoes(this.tetrominoesVo);
-		if (this.checkDownRange())
+		if (this.checkDownRange() && 
+			this.checkDownHit(this.tetrominoesVo))
 		{
 			//固定下落方块数据
 			this.fixedTetrominoes(this.tetrominoesVo);
