@@ -1,10 +1,12 @@
 package  
 {
+import event.TetrisEvent;
 import flash.display.Sprite;
 import flash.events.KeyboardEvent;
 import flash.events.TimerEvent;
 import flash.ui.Keyboard;
 import flash.utils.Timer;
+import utils.Random;
 /**
  * ...俄罗斯方块测试
  * @author Kanon
@@ -37,14 +39,20 @@ public class TetrisTest extends Sprite
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
 		this.tetris = new Tetris(12, 18);
-		this.tetris.createTetrominoesVo(4);
+		this.tetris.createTetrominoesVo(Random.randint(0, 5));
+		this.tetris.addEventListener(TetrisEvent.TETRIS_DOWN, tetrisDownHandler);
 		this.tetris.update();
 		this.draw();
 	}
 	
-	private function onKeyDownHandler(event:KeyboardEvent):void 
+	private function tetrisDownHandler(event:TetrisEvent):void
 	{
-		switch (event.keyCode)
+		this.tetris.createTetrominoesVo(Random.randint(0, 5));
+	}
+	
+	private function onKeyDownHandler(evt:KeyboardEvent):void 
+	{
+		switch (evt.keyCode)
 		{
 			case Keyboard.A:
 				this.tetris.left();

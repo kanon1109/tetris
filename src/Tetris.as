@@ -1,11 +1,13 @@
 package  
 {
 import data.TetrominoesVo;
+import event.TetrisEvent;
+import flash.events.EventDispatcher;
 /**
  * ...俄罗斯方块
  * @author Kanon
  */
-public class Tetris 
+public class Tetris extends EventDispatcher
 {
 	//地图数组
 	private var _map:Array
@@ -123,10 +125,7 @@ public class Tetris
 		this.tetrominoesVo.posY++;
 		this.updateTetrominoes(this.tetrominoesVo);
 		if (this.checkDownRange())
-		{
-			trace("checkDownRange");
-			this.createTetrominoesVo(4);
-		}
+			this.dispatchEvent(new TetrisEvent(TetrisEvent.TETRIS_DOWN));
 	}
 	
 	/**

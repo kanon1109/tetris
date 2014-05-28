@@ -46,7 +46,7 @@ public class TetrominoesVo
 								[[0, 0, 0, 0], [1, 1, 1, 0], [1, 0, 0, 0], [0, 0, 0, 0]], 
 								[[1, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]], 
 								[[0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 
-								[[0, 0, 1, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]]
+								[[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]]
 								]
 		//反向L字形4个方向						
 		this.tetrominoesModelList[3] = [
@@ -116,24 +116,23 @@ public class TetrominoesVo
 	private function getWidth(arr:Array):int
 	{
 		if (!arr) return 0;
-		var length:int = arr.length;
-		var maxWidth:int = 0;
+		var length:int = arr[0].length;
+		var len:int = arr.length;
+		var width:int = 0;
+		//从左向右遍历
 		for (var i:int = 0; i < length; i += 1)
 		{
-			var width:int = 0;
-			var rowAry:Array = arr[i];
-			var len:int = rowAry.length;
+			//从上往下遍历
 			for (var j:int = 0; j < len; j += 1) 
 			{
-				if (rowAry[j] == 1)
+				if (arr[j][i] == 1)
 				{
 					width++;
+					break;
 				}
 			}
-			if (width > maxWidth)
-				maxWidth = width;
 		}
-		return maxWidth;
+		return width;
 	}
 	
 	/**
@@ -144,23 +143,23 @@ public class TetrominoesVo
 	private function getHeight(arr:Array):int
 	{
 		if (!arr) return 0;
-		var len:int = arr.length;
-		var length:int = arr[0].length;
-		var maxHeight:int = 0;
+		var length:int = arr.length;
+		var len:int = arr[0].length;
+		var height:int = 0;
+		//从上往下遍历
 		for (var i:int = 0; i < length; i += 1)
 		{
-			var height:int = 0;
+			//从左往右遍历
 			for (var j:int = 0; j < len; j += 1) 
 			{
-				if (arr[j][i] == 1)
+				if (arr[i][j] == 1)
 				{
 					height++;
+					break;
 				}
 			}
-			if (height > maxHeight)
-				maxHeight = height;
 		}
-		return maxHeight;
+		return height;
 	}
 	
 	/**
