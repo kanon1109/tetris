@@ -1,5 +1,6 @@
 package  
 {
+import data.NodeVo;
 import event.TetrisEvent;
 import flash.display.Sprite;
 import flash.events.KeyboardEvent;
@@ -30,7 +31,7 @@ public class TetrisTest extends Sprite
 		this.rectHeight = 20;
 		this.gap = 2;
 		//默认一秒钟
-		this.delay = 200;
+		this.delay = 500;
 		
 		this.timer = new Timer(this.delay);
 		this.timer.addEventListener(TimerEvent.TIMER, timerHandler);
@@ -39,7 +40,7 @@ public class TetrisTest extends Sprite
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
 		this.tetris = new Tetris(12, 18);
-		this.tetris.createTetrominoesVo(Random.randint(0, 5));
+		this.tetris.createTetrominoesVo(Random.randint(0, 6));
 		this.tetris.addEventListener(TetrisEvent.TETRIS_DOWN, tetrisDownHandler);
 		this.tetris.update();
 		this.draw();
@@ -47,7 +48,7 @@ public class TetrisTest extends Sprite
 	
 	private function tetrisDownHandler(event:TetrisEvent):void
 	{
-		this.tetris.createTetrominoesVo(Random.randint(0, 5));
+		this.tetris.createTetrominoesVo(Random.randint(0, 6));
 	}
 	
 	private function onKeyDownHandler(evt:KeyboardEvent):void 
@@ -60,6 +61,10 @@ public class TetrisTest extends Sprite
 				break;
 			case Keyboard.D:
 				this.tetris.right();
+				this.draw();
+				break;
+			case Keyboard.S:
+				this.tetris.down();
 				this.draw();
 				break;
 			case Keyboard.W:
@@ -89,6 +94,7 @@ public class TetrisTest extends Sprite
 			var color:uint;
 			var value:int;
 			var length:int = this.tetris.map.length;
+			var node:NodeVo;
 			for (var i:int = 0; i < length; i += 1)
 			{
 				y = this.startY + (this.rectHeight + this.gap) * i;
@@ -96,9 +102,10 @@ public class TetrisTest extends Sprite
 				var len:int = arr.length;
 				for (var j:int = 0; j < len; j += 1)
 				{
-					value = arr[j];
-					if (value == 0) color = 0xFFFFFF;
-					else color = 0x000000;
+					//value = arr[j];
+					node = arr[j];
+					if (node.color == 0) color = 0xFFFFFF;
+					else color = node.color;
 					x = this.startX + (this.rectWidth + this.gap) * j;
 					this.graphics.beginFill(color);
 					this.graphics.drawRect(x, y, this.rectWidth, this.rectHeight);

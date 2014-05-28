@@ -24,9 +24,21 @@ public class TetrominoesVo
 	private var _dir:int;
 	//方块地图数组
 	private var tetrominoesModelList:Array;
+	//颜色数组
+	private var colorAry:Array;
 	//当前方向方格的数据
 	private var _map:Array;
+	//当前颜色
+	private var _color:uint;
 	public function TetrominoesVo() 
+	{
+		this.initData();
+	}
+	
+	/**
+	 * 初始化数据
+	 */
+	private function initData():void
 	{
 		this.tetrominoesModelList = [];
 		//长形2个方向
@@ -72,6 +84,8 @@ public class TetrominoesVo
 		this.tetrominoesModelList[6] = [
 								[[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]] 
 								]
+		//颜色数组
+		this.colorAry = [0xFFFF00, 0x80FF00, 0xFF00FF, 0x800040, 0x000040, 0x400080];
 	}
 	
 	/**
@@ -236,5 +250,15 @@ public class TetrominoesVo
 	 * 当前方向方格的数据
 	 */
 	public function get map():Array{ return _map; }
+	
+	/**
+	 * 颜色
+	 */
+	public function get color():uint 
+	{
+		if (type < 0) type = 0;
+		if (type > this.colorAry.length - 1) type = this.colorAry.length - 1;
+		return this.colorAry[this.type];
+	}
 }
 }

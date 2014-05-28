@@ -1,5 +1,6 @@
 package  
 {
+import data.NodeVo;
 import data.TetrominoesVo;
 import event.TetrisEvent;
 import flash.events.EventDispatcher;
@@ -44,7 +45,8 @@ public class Tetris extends EventDispatcher
 			this._map[i] = [];
 			for (var j:int = 0; j < this.rows; j += 1) 
 			{
-				this._map[i][j] = 0;
+				var node:NodeVo = new NodeVo();
+				this._map[i][j] = node;
 			}
 		}
 	}
@@ -59,6 +61,7 @@ public class Tetris extends EventDispatcher
 		this.clearMap();
 		var arr:Array = vo.map;
 		var length:int = arr.length;
+		var node:NodeVo;
 		//遍历方块数据
 		for (var i:int = 0; i < length; i += 1) 
 		{
@@ -70,7 +73,14 @@ public class Tetris extends EventDispatcher
 				//将有数据的位置设置到大地图上
 				if (this._map[vo.posY + i] != null &&
 					this._map[vo.posY + i][vo.posX + j] != null)
-					this._map[vo.posY + i][vo.posX + j] = rowAry[j];
+				{
+					node = this._map[vo.posY + i][vo.posX + j];
+					if (rowAry[j] == 1) 
+					{
+						node.status = NodeVo.UNSTABLE;
+						node.color = vo.color;
+					}
+				}
 			}
 		}
 	}
@@ -115,6 +125,36 @@ public class Tetris extends EventDispatcher
 		return false;
 	}
 	
+	/**
+	 * 固定方块不动
+	 * @param	vo	方块数据
+	 */
+	private function fixedTetrominoes(vo:TetrominoesVo):void
+	{
+		if (!vo) return;
+		var arr:Array = vo.map;
+		var length:int = arr.length;
+		var node:NodeVo;
+		//遍历方块数据
+		for (var i:int = 0; i < length; i += 1) 
+		{
+			//横向数据
+			var rowAry:Array = arr[i];
+			var len:int = rowAry.length;
+			for (var j:int = 0; j < len; j += 1)
+			{
+				//将有数据的位置设置到大地图上
+				if (this._map[vo.posY + i] != null &&
+					this._map[vo.posY + i][vo.posX + j] != null)
+				{
+					node = this._map[vo.posY + i][vo.posX + j];
+					if (rowAry[j] == 1) 
+						node.status = NodeVo.STABLE;
+				}
+			}
+		}
+	}
+	
 	/******************public**********************************/
 	/**
 	 * 向下
@@ -125,7 +165,12 @@ public class Tetris extends EventDispatcher
 		this.tetrominoesVo.posY++;
 		this.updateTetrominoes(this.tetrominoesVo);
 		if (this.checkDownRange())
+		{
+			//固定下落方块数据
+			this.fixedTetrominoes(this.tetrominoesVo);
+			//将地图数据设置成长久类型数据，每帧不擦除数据。
 			this.dispatchEvent(new TetrisEvent(TetrisEvent.TETRIS_DOWN));
+		}
 	}
 	
 	/**
@@ -201,11 +246,17 @@ public class Tetris extends EventDispatcher
 	 */
 	public function clearMap():void
 	{
+		var node:NodeVo;
 		for (var i:int = 0; i < this.columns; i += 1) 
 		{
 			for (var j:int = 0; j < this.rows; j += 1) 
 			{
-				this._map[i][j] = 0;
+				node = this._map[i][j];
+				if (node.status != NodeVo.STABLE)
+				{
+					node.color = 0;
+					node.status = NodeVo.EMPTY;
+				}
 			}
 		}
 	}
@@ -215,12 +266,14 @@ public class Tetris extends EventDispatcher
 	 */
 	public function print():void
 	{
+		var node:NodeVo;
 		var str:String = "";
 		for (var i:int = 0; i < this.columns; i += 1) 
 		{
 			for (var j:int = 0; j < this.rows; j += 1) 
 			{
-				str += this._map[i][j];
+				node = this._map[i][j];
+				str += node.status;
 			}
 			str += "\n";
 		}
