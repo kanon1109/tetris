@@ -39,7 +39,7 @@ public class TetrisTest extends Sprite
 		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
-		this.tetris = new Tetris(12, 18);
+		this.tetris = new Tetris(18, 12);
 		this.tetris.createTetrominoesVo(Random.randint(0, 6));
 		this.tetris.addEventListener(TetrisEvent.TETRIS_DOWN, tetrisDownHandler);
 		this.tetris.update();
@@ -70,6 +70,10 @@ public class TetrisTest extends Sprite
 			case Keyboard.W:
 				this.tetris.rotation();
 				this.draw();
+				break;
+			case Keyboard.SPACE:
+				if (this.timer.running) this.timer.stop();
+				else this.timer.start();
 				break;
 		}
 	}

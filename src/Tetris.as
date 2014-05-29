@@ -40,12 +40,12 @@ public class Tetris extends EventDispatcher
 	private function initMap():void
 	{
 		this._map = [];
-		for (var i:int = 0; i < this.columns; i += 1) 
+		for (var i:int = 0; i < this.rows; i += 1) 
 		{
 			this._map[i] = [];
-			for (var j:int = 0; j < this.rows; j += 1) 
+			for (var j:int = 0; j < this.columns; j += 1) 
 			{
-				var node:NodeVo = new NodeVo();
+				var node:NodeVo = new NodeVo(i, j);
 				this._map[i][j] = node;
 			}
 		}
@@ -75,7 +75,7 @@ public class Tetris extends EventDispatcher
 					this._map[vo.posY + i][vo.posX + j] != null)
 				{
 					node = this._map[vo.posY + i][vo.posX + j];
-					if (rowAry[j] == 1) 
+					if (node.status != NodeVo.STABLE && rowAry[j] == 1) 
 					{
 						node.status = NodeVo.UNSTABLE;
 						node.color = vo.color;
@@ -92,8 +92,27 @@ public class Tetris extends EventDispatcher
 	private function checkLeftRange():Boolean
 	{
 		if (!this.tetrominoesVo) return true;
-		if (this.tetrominoesVo.posX + this.tetrominoesVo.left - 1 < 0)
-			return true;
+		var column:int = this.tetrominoesVo.posX + this.tetrominoesVo.left;
+		if (column - 1 < 0) return true;
+		var length:int = this.tetrominoesVo.map.length;
+		var node:NodeVo;
+		var leftNode:NodeVo;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			if (this._map[this.tetrominoesVo.posY + i] != null && 
+				this._map[this.tetrominoesVo.posY + i][column] != null)
+			{
+				node = this._map[this.tetrominoesVo.posY + i][column];
+				if (node.status == NodeVo.UNSTABLE)
+				{
+					leftNode = this._map[this.tetrominoesVo.posY + i][column - 1];
+					if (leftNode.status == NodeVo.STABLE)
+					{
+						return true;
+					}
+				}
+			}
+		}
 		return false;
 	}
 	
@@ -104,10 +123,27 @@ public class Tetris extends EventDispatcher
 	private function checkRightRange():Boolean
 	{
 		if (!this.tetrominoesVo) return true;
-		if (this.tetrominoesVo.posX + 
-			this.tetrominoesVo.left + 
-			this.tetrominoesVo.width + 1 > this.rows)
-			return true
+		var column:int = this.tetrominoesVo.posX + this.tetrominoesVo.left + this.tetrominoesVo.width;
+		if (column + 1 > this.columns) return true;
+		var length:int = this.tetrominoesVo.map.length;
+		var node:NodeVo;
+		var rightNode:NodeVo;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			if (this._map[this.tetrominoesVo.posY + i] != null && 
+				this._map[this.tetrominoesVo.posY + i][column] != null)
+			{
+				node = this._map[this.tetrominoesVo.posY + i][column];
+				if (node.status == NodeVo.UNSTABLE)
+				{
+					leftNode = this._map[this.tetrominoesVo.posY + i][column - 1];
+					if (leftNode.status == NodeVo.STABLE)
+					{
+						return true;
+					}
+				}
+			}
+		}
 		return false;
 	}
 	
@@ -120,7 +156,7 @@ public class Tetris extends EventDispatcher
 		if (!this.tetrominoesVo) return false;
 		if (this.tetrominoesVo.posY + 
 			this.tetrominoesVo.top + 
-			this.tetrominoesVo.height >= this.columns)
+			this.tetrominoesVo.height >= this.rows)
 			return true;
 		return false;
 	}
@@ -166,6 +202,8 @@ public class Tetris extends EventDispatcher
 		var arr:Array = vo.map;
 		var length:int = arr.length;
 		var node:NodeVo;
+		//碰到的底下的格子方块
+		var downNode:NodeVo;
 		//遍历方块数据
 		for (var i:int = 0; i < length; i += 1) 
 		{
@@ -175,13 +213,20 @@ public class Tetris extends EventDispatcher
 			for (var j:int = 0; j < len; j += 1)
 			{
 				//将有数据的位置设置到大地图上
-				if (this._map[vo.posY + i + 1] != null &&
-					this._map[vo.posY + i + 1][vo.posX + j] != null)
+				if (this._map[vo.posY + i] != null &&
+					this._map[vo.posY + i + 1] != null &&
+					this._map[vo.posY + i][vo.posX + j] != null)
 				{
-					node = this._map[vo.posY + i + 1][vo.posX + j];
-					
+					node = this._map[vo.posY + i][vo.posX + j];
+					downNode = this._map[vo.posY + i + 1][vo.posX + j];
+					if (node.status == NodeVo.UNSTABLE && 
+						downNode.status == NodeVo.STABLE)
+					{
+						return true;
+					}
 				}
 			}
+			//trace("----------------------------");
 		}
 		return false;
 	}
@@ -193,15 +238,18 @@ public class Tetris extends EventDispatcher
 	public function down():void 
 	{
 		if (!this.tetrominoesVo) return;
-		this.tetrominoesVo.posY++;
-		this.updateTetrominoes(this.tetrominoesVo);
-		if (this.checkDownRange() && 
+		if (this.checkDownRange() || 
 			this.checkDownHit(this.tetrominoesVo))
 		{
 			//固定下落方块数据
 			this.fixedTetrominoes(this.tetrominoesVo);
 			//将地图数据设置成长久类型数据，每帧不擦除数据。
 			this.dispatchEvent(new TetrisEvent(TetrisEvent.TETRIS_DOWN));
+		}
+		else
+		{
+			this.tetrominoesVo.posY++;
+			this.updateTetrominoes(this.tetrominoesVo);
 		}
 	}
 	
@@ -243,11 +291,11 @@ public class Tetris extends EventDispatcher
 				Math.abs(this.tetrominoesVo.posX + this.tetrominoesVo.left);
 			this.updateTetrominoes(this.tetrominoesVo);
 		}
-		if (this.tetrominoesVo.posX + this.tetrominoesVo.width > this.rows)
+		if (this.tetrominoesVo.posX + this.tetrominoesVo.width > this.columns)
 		{
 			//右边变形时超过边界
 			this.tetrominoesVo.posX -= 
-				Math.abs(this.rows - (this.tetrominoesVo.posX + this.tetrominoesVo.width));
+				Math.abs(this.columns - (this.tetrominoesVo.posX + this.tetrominoesVo.width));
 			this.updateTetrominoes(this.tetrominoesVo);
 		}
 	}
@@ -261,7 +309,7 @@ public class Tetris extends EventDispatcher
 		this.tetrominoesVo = new TetrominoesVo();
 		this.tetrominoesVo.type = type;
 		this.tetrominoesVo.dir = 0;
-		this.tetrominoesVo.posX = int((this.rows - this.tetrominoesVo.map.length) / 2);
+		this.tetrominoesVo.posX = int((this.columns - this.tetrominoesVo.map.length) / 2);
 		this.tetrominoesVo.posY = 0;
 	}
 	
@@ -279,9 +327,9 @@ public class Tetris extends EventDispatcher
 	public function clearMap():void
 	{
 		var node:NodeVo;
-		for (var i:int = 0; i < this.columns; i += 1) 
+		for (var i:int = 0; i < this.rows; i += 1) 
 		{
-			for (var j:int = 0; j < this.rows; j += 1) 
+			for (var j:int = 0; j < this.columns; j += 1) 
 			{
 				node = this._map[i][j];
 				if (node.status != NodeVo.STABLE)
@@ -300,9 +348,9 @@ public class Tetris extends EventDispatcher
 	{
 		var node:NodeVo;
 		var str:String = "";
-		for (var i:int = 0; i < this.columns; i += 1) 
+		for (var i:int = 0; i < this.rows; i += 1) 
 		{
-			for (var j:int = 0; j < this.rows; j += 1) 
+			for (var j:int = 0; j < this.columns; j += 1) 
 			{
 				node = this._map[i][j];
 				str += node.status;

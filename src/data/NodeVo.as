@@ -16,5 +16,23 @@ public class NodeVo
 	public var color:uint = 0;
 	//状态0白色无状态，1每帧可擦除状态，2固定状态
 	public var status:int = 0;
+	//行号
+	private var row:int;
+	//列号
+	private var column:int;
+	public function NodeVo(row:int, column:int)
+	{
+		this.row = row;
+		this.column = column;
+	}
+	
+	/**
+	 * 格式化字符串形式
+	 * @return
+	 */
+	public function toString():String
+	{
+		return "row:" + row + " column:" + column;
+	}
 }
 }
