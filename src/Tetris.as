@@ -66,8 +66,7 @@ public class Tetris extends EventDispatcher
 		for (var i:int = 0; i < length; i += 1) 
 		{
 			//横向数据
-			var rowAry:Array = arr[i];
-			var len:int = rowAry.length;
+			var len:int = arr[i].length;
 			for (var j:int = 0; j < len; j += 1)
 			{
 				//将有数据的位置设置到大地图上
@@ -75,7 +74,8 @@ public class Tetris extends EventDispatcher
 					this._map[vo.posY + i][vo.posX + j] != null)
 				{
 					node = this._map[vo.posY + i][vo.posX + j];
-					if (node.status != NodeVo.STABLE && rowAry[j] == 1) 
+					//如果地图节点上的数据不是固定数据，将方块地图上数据为1的部位映射到地图节点上
+					if (node.status != NodeVo.STABLE && arr[i][j] == 1) 
 					{
 						node.status = NodeVo.UNSTABLE;
 						node.color = vo.color;
@@ -92,7 +92,7 @@ public class Tetris extends EventDispatcher
 	private function checkLeftRange():Boolean
 	{
 		if (!this.tetrominoesVo) return true;
-		var column:int = this.tetrominoesVo.posX + this.tetrominoesVo.left;
+		var column:int = this.tetrominoesVo.left;
 		if (column - 1 < 0) return true;
 		var length:int = this.tetrominoesVo.map.length;
 		var node:NodeVo;
@@ -123,21 +123,22 @@ public class Tetris extends EventDispatcher
 	private function checkRightRange():Boolean
 	{
 		if (!this.tetrominoesVo) return true;
-		var column:int = this.tetrominoesVo.posX + this.tetrominoesVo.left + this.tetrominoesVo.width;
-		if (column + 1 > this.columns) return true;
+		var column:int = this.tetrominoesVo.right;
+		if (column + 1 >= this.columns) return true;
 		var length:int = this.tetrominoesVo.map.length;
 		var node:NodeVo;
 		var rightNode:NodeVo;
 		for (var i:int = 0; i < length; i += 1)
 		{
 			if (this._map[this.tetrominoesVo.posY + i] != null && 
+				this._map[this.tetrominoesVo.posY + i][column + 1] != null &&
 				this._map[this.tetrominoesVo.posY + i][column] != null)
 			{
 				node = this._map[this.tetrominoesVo.posY + i][column];
 				if (node.status == NodeVo.UNSTABLE)
 				{
-					leftNode = this._map[this.tetrominoesVo.posY + i][column - 1];
-					if (leftNode.status == NodeVo.STABLE)
+					rightNode = this._map[this.tetrominoesVo.posY + i][column + 1];
+					if (rightNode.status == NodeVo.STABLE)
 					{
 						return true;
 					}
@@ -154,9 +155,7 @@ public class Tetris extends EventDispatcher
 	private function checkDownRange():Boolean
 	{
 		if (!this.tetrominoesVo) return false;
-		if (this.tetrominoesVo.posY + 
-			this.tetrominoesVo.top + 
-			this.tetrominoesVo.height >= this.rows)
+		if (this.tetrominoesVo.down + 1 >= this.rows)
 			return true;
 		return false;
 	}
@@ -226,7 +225,6 @@ public class Tetris extends EventDispatcher
 					}
 				}
 			}
-			//trace("----------------------------");
 		}
 		return false;
 	}
@@ -283,19 +281,46 @@ public class Tetris extends EventDispatcher
 		if (!this.tetrominoesVo) return;
 		this.tetrominoesVo.dir++;
 		this.updateTetrominoes(this.tetrominoesVo);
-		if (this.tetrominoesVo.posX + this.tetrominoesVo.left < 0)
+		
+		/*var length:int = this.tetrominoesVo.map.length;
+		var node:NodeVo;
+		var rightNode:NodeVo;
+		var leftNode:NodeVo;
+		var leftDis:int = 0;
+		var rightDis:int = 0;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			if (this._map[this.tetrominoesVo.posY + i] != null && 
+				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.left] != null &&
+				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.right] != null &&
+				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.right + 1] != null &&
+				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.left - 1] != null)
+			{
+				node = this._map[this.tetrominoesVo.posY + i][column];
+				if (node.status == NodeVo.UNSTABLE)
+				{
+					rightNode = this._map[this.tetrominoesVo.posY + i][column + 1];
+					leftNode = this._map[this.tetrominoesVo.posY + i][column - 1];
+					if (rightNode.status == NodeVo.STABLE)
+					{
+						
+					}
+				}
+			}
+		}
+		*/
+		if (this.tetrominoesVo.left < 0)
 		{
 			//左边变形时超过边界
 			//如果旋转后位置超过边界则加上相差的位置 并重新渲染
 			this.tetrominoesVo.posX += 
-				Math.abs(this.tetrominoesVo.posX + this.tetrominoesVo.left);
+				Math.abs(this.tetrominoesVo.left);
 			this.updateTetrominoes(this.tetrominoesVo);
 		}
-		if (this.tetrominoesVo.posX + this.tetrominoesVo.width > this.columns)
+		if (this.tetrominoesVo.right > this.columns)
 		{
 			//右边变形时超过边界
-			this.tetrominoesVo.posX -= 
-				Math.abs(this.columns - (this.tetrominoesVo.posX + this.tetrominoesVo.width));
+			this.tetrominoesVo.posX -= Math.abs(this.columns - this.tetrominoesVo.right);
 			this.updateTetrominoes(this.tetrominoesVo);
 		}
 	}
@@ -311,14 +336,6 @@ public class Tetris extends EventDispatcher
 		this.tetrominoesVo.dir = 0;
 		this.tetrominoesVo.posX = int((this.columns - this.tetrominoesVo.map.length) / 2);
 		this.tetrominoesVo.posY = 0;
-	}
-	
-	/**
-	 * 更新方法
-	 */
-	public function update():void
-	{
-		this.down();
 	}
 	
 	/**

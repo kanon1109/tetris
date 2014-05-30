@@ -15,9 +15,13 @@ public class TetrominoesVo
 	//高度（纵向最大格子数量）
 	public var height:int;
 	//左边第一个有数据（颜色）的格子位置
-	public var left:int;
+	private var _leftIndex:int;
+	//右边第一个有数据（颜色）的格子位置
+	private var _rightIndex:int;
+	//底部第一个有数据（颜色）的格子位置
+	private var _downIndex:int;
 	//顶部第一个有数据（颜色）的格子位置
-	public var top:int;
+	private var _topIndex:int;
 	//当前方块类型
 	public var type:int;
 	//当前方向
@@ -85,7 +89,7 @@ public class TetrominoesVo
 								[[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]] 
 								]
 		//颜色数组
-		this.colorAry = [0xFFFF00, 0x80FF00, 0xFF00FF, 0x800040, 0x000040, 0x400080];
+		this.colorAry = [0xFFFF00, 0x80FF00, 0xFF00FF, 0x800040, 0x000040, 0x400080, 0x11FF11];
 	}
 	
 	/**
@@ -115,8 +119,8 @@ public class TetrominoesVo
 			var mapAry:Array = arr[dir];
 			this.width = this.getWidth(mapAry);
 			this.height = this.getHeight(mapAry);
-			this.left = this.getLeft(mapAry);
-			this.top = this.getTop(mapAry);
+			this._leftIndex = this.getLeft(mapAry);
+			this._topIndex = this.getTop(mapAry);
 			return mapAry;
 		}
 		return null;
@@ -240,6 +244,7 @@ public class TetrominoesVo
 	public function set dir(value:int):void 
 	{
 		_dir = value;
+		trace("this.type", this.type);
 		var arr:Array = this.getTetrominoeByType(this.type);
 		if (this._dir < 0) this._dir = arr.length - 1;
 		if (this._dir > arr.length - 1) this._dir = 0;
@@ -259,6 +264,40 @@ public class TetrominoesVo
 		if (type < 0) type = 0;
 		if (type > this.colorAry.length - 1) type = this.colorAry.length - 1;
 		return this.colorAry[this.type];
+	}
+	
+	/**
+	 * 右边第一个有数据（颜色）的格子位置
+	 */
+	public function get right():int 
+	{
+		this._rightIndex = this.left + this.width - 1;
+		return this._rightIndex;
+	}
+	
+	/**
+	 * 底部第一个有数据（颜色）的格子位置
+	 */
+	public function get down():int 
+	{
+		this._downIndex = this.top + this.height - 1;
+		return _downIndex;
+	}
+	
+	/**
+	 * 左边第一个有数据（颜色）的格子位置
+	 */
+	public function get left():int 
+	{
+		return this.posX + this._leftIndex;
+	}
+	
+	/**
+	 * 顶部第一个有数据（颜色）的格子位置
+	 */
+	public function get top():int 
+	{
+		return this.posY + this._topIndex;
 	}
 }
 }

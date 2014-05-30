@@ -41,8 +41,9 @@ public class TetrisTest extends Sprite
 		
 		this.tetris = new Tetris(18, 12);
 		this.tetris.createTetrominoesVo(Random.randint(0, 6));
+		//this.tetris.createTetrominoesVo(6);
 		this.tetris.addEventListener(TetrisEvent.TETRIS_DOWN, tetrisDownHandler);
-		this.tetris.update();
+		this.tetris.down();
 		this.draw();
 	}
 	
@@ -80,7 +81,7 @@ public class TetrisTest extends Sprite
 	
 	private function timerHandler(event:TimerEvent):void 
 	{
-		this.tetris.update();
+		this.tetris.down();
 		//this.tetris.print();
 		this.draw();
 	}
@@ -111,7 +112,7 @@ public class TetrisTest extends Sprite
 					if (node.color == 0) color = 0xFFFFFF;
 					else color = node.color;
 					x = this.startX + (this.rectWidth + this.gap) * j;
-					this.graphics.beginFill(color);
+					this.graphics.beginFill(color, node.alpha);
 					this.graphics.drawRect(x, y, this.rectWidth, this.rectHeight);
 					this.graphics.endFill();
 				}

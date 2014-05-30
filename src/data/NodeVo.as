@@ -20,6 +20,8 @@ public class NodeVo
 	private var row:int;
 	//列号
 	private var column:int;
+	//透明度
+	public var alpha:Number = 1;
 	public function NodeVo(row:int, column:int)
 	{
 		this.row = row;
