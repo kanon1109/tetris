@@ -155,7 +155,7 @@ public class Tetris extends EventDispatcher
 	private function checkDownRange():Boolean
 	{
 		if (!this.tetrominoesVo) return false;
-		if (this.tetrominoesVo.down + 1 >= this.rows)
+		if (this.tetrominoesVo.down >= this.rows - 1)
 			return true;
 		return false;
 	}
@@ -280,14 +280,17 @@ public class Tetris extends EventDispatcher
 	{
 		if (!this.tetrominoesVo) return;
 		this.tetrominoesVo.dir++;
+		if (this.tetrominoesVo.down >= this.rows)
+		{
+			//底部变形时超过边界时 不允许变形
+			this.tetrominoesVo.dir--;
+		}
 		this.updateTetrominoes(this.tetrominoesVo);
 		
 		/*var length:int = this.tetrominoesVo.map.length;
 		var node:NodeVo;
 		var rightNode:NodeVo;
 		var leftNode:NodeVo;
-		var leftDis:int = 0;
-		var rightDis:int = 0;
 		for (var i:int = 0; i < length; i += 1)
 		{
 			if (this._map[this.tetrominoesVo.posY + i] != null && 
@@ -307,8 +310,8 @@ public class Tetris extends EventDispatcher
 					}
 				}
 			}
-		}
-		*/
+		}*/
+		
 		if (this.tetrominoesVo.left < 0)
 		{
 			//左边变形时超过边界
@@ -317,10 +320,10 @@ public class Tetris extends EventDispatcher
 				Math.abs(this.tetrominoesVo.left);
 			this.updateTetrominoes(this.tetrominoesVo);
 		}
-		if (this.tetrominoesVo.right > this.columns)
+		if (this.tetrominoesVo.right >= this.columns)
 		{
 			//右边变形时超过边界
-			this.tetrominoesVo.posX -= Math.abs(this.columns - this.tetrominoesVo.right);
+			this.tetrominoesVo.posX -= Math.abs(this.columns - 1 - this.tetrominoesVo.right);
 			this.updateTetrominoes(this.tetrominoesVo);
 		}
 	}

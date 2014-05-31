@@ -40,8 +40,8 @@ public class TetrisTest extends Sprite
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
 		this.tetris = new Tetris(18, 12);
-		this.tetris.createTetrominoesVo(Random.randint(0, 6));
-		//this.tetris.createTetrominoesVo(6);
+		//this.tetris.createTetrominoesVo(Random.randint(0, 6));
+		this.tetris.createTetrominoesVo(0);
 		this.tetris.addEventListener(TetrisEvent.TETRIS_DOWN, tetrisDownHandler);
 		this.tetris.down();
 		this.draw();
@@ -49,7 +49,8 @@ public class TetrisTest extends Sprite
 	
 	private function tetrisDownHandler(event:TetrisEvent):void
 	{
-		this.tetris.createTetrominoesVo(Random.randint(0, 6));
+		//this.tetris.createTetrominoesVo(Random.randint(0, 6));
+		this.tetris.createTetrominoesVo(0);
 	}
 	
 	private function onKeyDownHandler(evt:KeyboardEvent):void 
