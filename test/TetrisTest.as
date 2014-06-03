@@ -5,9 +5,13 @@ import event.TetrisEvent;
 import flash.display.Sprite;
 import flash.events.KeyboardEvent;
 import flash.events.TimerEvent;
+import flash.text.TextField;
+import flash.text.TextFieldAutoSize;
+import flash.text.TextFormat;
 import flash.ui.Keyboard;
 import flash.utils.Timer;
 import utils.Random;
+import utils.TraceUtil;
 /**
  * ...俄罗斯方块测试
  * @author Kanon
@@ -36,6 +40,8 @@ public class TetrisTest extends Sprite
 	private var effectCurTimes:int;
 	//满行数组
 	private var fullRowList:Array;
+	//文本
+	private var txt:TextField;
 	public function TetrisTest() 
 	{
 		this.rows = 18;
@@ -56,12 +62,30 @@ public class TetrisTest extends Sprite
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
 		this.tetris = new Tetris(this.rows, this.columns);
-		//this.tetris.createTetrominoesVo(Random.randint(0, 6));
-		this.tetris.createTetrominoesVo(0);
+		this.tetris.createTetrominoesVo(Random.randint(0, 6));
 		this.tetris.addEventListener(TetrisEvent.TETRIS_DOWN, tetrisDownHandler);
 		this.tetris.addEventListener(TetrisEvent.FULL, fullHandler);
+		this.tetris.addEventListener(TetrisEvent.FAIL, failHandler);
 		this.tetris.down();
 		this.draw();
+	}
+	
+	private function failHandler(event:TetrisEvent):void 
+	{
+		trace("failHandler");
+		this.timer.stop();
+		this.isPause = true;
+		
+		var tf:TextFormat = new TextFormat();
+		tf.size = 50;
+		this.txt = new TextField();
+		this.txt.textColor = 0xFF0000;
+		this.txt.autoSize = TextFieldAutoSize.CENTER;
+		this.txt.defaultTextFormat = tf;
+		this.txt.text = "Fail";
+		this.txt.x = (this.columns * (this.rectWidth + this.gap) - this.txt.width) * .5;
+		this.txt.y = (stage.stageHeight - this.txt.height) * .5;
+		this.addChild(this.txt);
 	}
 	
 	private function fullHandler(e:TetrisEvent):void 
@@ -80,6 +104,7 @@ public class TetrisTest extends Sprite
 		this.effectCurTimes++;
 		var node:NodeVo;
 		var arr:Array;
+		var length:int = this.fullRowList.length;
 		for (var i:int = 0; i < length; i += 1)
 		{
 			arr = this.fullRowList[i];
@@ -103,39 +128,65 @@ public class TetrisTest extends Sprite
 			this.effectTimer.stop();
 			this.effectCurTimes = 0;
 			this.isPause = false;
+			this.tetris.print();
 		}
 	}
 	
 	private function tetrisDownHandler(event:TetrisEvent):void
 	{
-		//this.tetris.createTetrominoesVo(Random.randint(0, 6));
-		this.tetris.createTetrominoesVo(0);
+		this.tetris.createTetrominoesVo(Random.randint(0, 6));
 	}
 	
 	private function onKeyDownHandler(evt:KeyboardEvent):void 
 	{
-		if (this.isPause) return;
 		switch (evt.keyCode)
 		{
 			case Keyboard.A:
-				this.tetris.left();
-				this.draw();
+				if (!this.isPause)
+				{
+					this.tetris.left();
+					this.draw();
+				}
 				break;
 			case Keyboard.D:
-				this.tetris.right();
-				this.draw();
+				if (!this.isPause)
+				{
+					this.tetris.right();
+					this.draw();
+				}
 				break;
 			case Keyboard.S:
-				this.tetris.down();
-				this.draw();
+				if (!this.isPause)
+				{
+					this.tetris.down();
+					this.draw();
+				}
 				break;
 			case Keyboard.W:
-				this.tetris.rotation();
-				this.draw();
+				if (!this.isPause)
+				{
+					this.tetris.rotation();
+					this.draw();
+				}
 				break;
 			case Keyboard.SPACE:
+				if (!this.isPause)
+				{
+					if (this.timer.running) this.timer.stop();
+					else this.timer.start();
+				}
+				break;
+			case Keyboard.R:
 				if (this.timer.running) this.timer.stop();
-				else this.timer.start();
+				this.isPause = false;
+				this.tetris.resetMap();
+				this.tetris.createTetrominoesVo(Random.randint(0, 6));
+				this.draw();
+				this.tetris.down();
+				this.effectCurTimes = 0;
+				this.timer.start();
+				if (this.txt && this.txt.parent)
+					this.txt.parent.removeChild(this.txt);
 				break;
 		}
 	}

@@ -34,7 +34,7 @@ public class NodeVo
 	 */
 	public function toString():String
 	{
-		return "row:" + row + " column:" + column;
+		return "row:" + row + " column:" + column + " status:" + status;
 	}
 }
 }

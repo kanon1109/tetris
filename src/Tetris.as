@@ -231,7 +231,8 @@ public class Tetris extends EventDispatcher
 	
 	/**
 	 * 判断全行
-	 * @return	为满数据行的列表 格式[[行数，列数，颜色],[行数，列数，颜色]]
+	 * @return	为满数据行的列表 格式[[[行数1，列数1，颜色],[行数1，列数2，颜色]], 
+	 * 							     [[行数2，列数1，颜色],[行数2，列数2，颜色]]]
 	 */
 	private function checkFullLine():Array
 	{
@@ -242,20 +243,20 @@ public class Tetris extends EventDispatcher
 		{
 			var isFull:Boolean = true;
 			//临时数组
-			var temp:Array = [];
+			var tempAry:Array = [];
 			for (var j:int = 0; j < this.columns; j += 1)
 			{
 				node = this._map[i][j];
 				if (node.color == 0) color = 0xFFFFFF;
 				else color = node.color;
-				temp.push([i, j, color]);
+				tempAry.push([i, j, color]);
 				if (node.status != NodeVo.STABLE)
 				{
 					isFull = false;
 					break;
 				}
 			}
-			if (isFull) fullRowsList.push(temp);
+			if (isFull) fullRowsList.push(tempAry);
 		}
 		return fullRowsList;
 	}
@@ -271,17 +272,105 @@ public class Tetris extends EventDispatcher
 		var node:NodeVo;
 		for (var i:int = 0; i < length; i += 1) 
 		{
-			var arr:Array = fullRowsList[i];
-			var len:int = arr.length;
+			//被消除行的数组
+			var temp:Array = fullRowsList[i];
+			var len:int = temp.length;
 			for (var j:int = 0; j < len; j += 1) 
 			{
-				var row:int = arr[j][0];
-				var column:int = arr[j][1];
+				var row:int = temp[j][0];
+				var column:int = temp[j][1];
 				node = this._map[row][column];
 				node.status = NodeVo.EMPTY;
 				node.color = 0;
 			}
 		}
+	}
+	
+	/**
+	 * 合并消除后的空行
+	 * @param	fullRowsList	被消除的数据列表
+	 */
+	private function mergerLine(fullRowsList:Array):void
+	{
+		if (!fullRowsList) return;
+		var length:int = fullRowsList.length;
+		var node:NodeVo;
+		//空行数据节点
+		var emptyNode:NodeVo;
+		for (var i:int = 0; i < length; i += 1) 
+		{
+			//单个空行数据[[行数1，列数1，颜色], [行数1，列数2，颜色], [行数1，列数2，颜色]]
+			var arr:Array = fullRowsList[i];
+			var len:int = arr.length;
+			var row:int = arr[0][0];
+			if (row > 0)
+			{
+				//向上将一整行数据下移
+				for (var j:int = row - 1; j >= 0; j -= 1) 
+				{
+					for (var k:int = 0; k < this.columns; k++) 
+					{
+						node = this._map[j][k];
+						//trace("--node--", node.toString());
+						emptyNode = this._map[j + 1][k];
+						emptyNode.status = node.status;
+						emptyNode.color = node.color;
+						//trace("--emptyNode--", emptyNode.toString());
+						node.status = NodeVo.EMPTY;
+						node.color = 0;
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 清空整个数组
+	 */
+	private function clearMap():void
+	{
+		var node:NodeVo;
+		for (var i:int = 0; i < this.rows; i += 1) 
+		{
+			for (var j:int = 0; j < this.columns; j += 1) 
+			{
+				node = this._map[i][j];
+				if (node.status != NodeVo.STABLE)
+				{
+					node.color = 0;
+					node.status = NodeVo.EMPTY;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 是否失败
+	 * @return
+	 */
+	private function checkFail(vo:TetrominoesVo):Boolean
+	{
+		var arr:Array = vo.map;
+		var length:int = arr.length;
+		var node:NodeVo;
+		//遍历方块数据
+		for (var i:int = 0; i < length; i += 1) 
+		{
+			var rowAry:Array = arr[i];
+			var len:int = rowAry.length;
+			for (var j:int = 0; j < len; j += 1)
+			{
+				//将有数据的位置设置到大地图上
+				if (this._map[vo.posY + i] != null &&
+					this._map[vo.posY + i][vo.posX + j] != null)
+				{
+					node = this._map[vo.posY + i][vo.posX + j];
+					if (node.status == NodeVo.STABLE && vo.posY <= 2)
+						return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	/******************public**********************************/
@@ -296,12 +385,18 @@ public class Tetris extends EventDispatcher
 		{
 			//固定下落方块数据
 			this.fixedTetrominoes(this.tetrominoesVo);
+			if (this.checkFail(this.tetrominoesVo))
+			{
+				this.dispatchEvent(new TetrisEvent(TetrisEvent.FAIL));
+				return;
+			}
 			//判断是否摆满
 			var rowLineAry:Array = this.checkFullLine();
 			if (rowLineAry.length > 0)
 			{
 				this.dispatchEvent(new TetrisEvent(TetrisEvent.FULL, rowLineAry));
 				this.removeFullLine(rowLineAry);
+				this.mergerLine(rowLineAry);
 			}
 			//将地图数据设置成长久类型数据，每帧不擦除数据。
 			this.dispatchEvent(new TetrisEvent(TetrisEvent.TETRIS_DOWN));
@@ -393,21 +488,19 @@ public class Tetris extends EventDispatcher
 	}
 	
 	/**
-	 * 清空整个数组
+	 * 重置整个地图
 	 */
-	public function clearMap():void
+	public function resetMap():void
 	{
+		this.tetrominoesVo = null;
 		var node:NodeVo;
 		for (var i:int = 0; i < this.rows; i += 1) 
 		{
 			for (var j:int = 0; j < this.columns; j += 1) 
 			{
 				node = this._map[i][j];
-				if (node.status != NodeVo.STABLE)
-				{
-					node.color = 0;
-					node.status = NodeVo.EMPTY;
-				}
+				node.color = 0;
+				node.status = NodeVo.EMPTY;
 			}
 		}
 	}
@@ -418,7 +511,7 @@ public class Tetris extends EventDispatcher
 	public function print():void
 	{
 		var node:NodeVo;
-		var str:String = "";
+		var str:String = "----------------\n";
 		for (var i:int = 0; i < this.rows; i += 1) 
 		{
 			for (var j:int = 0; j < this.columns; j += 1) 

@@ -11,6 +11,8 @@ public class TetrisEvent extends Event
 	public static const TETRIS_DOWN:String = "tetrisDown";
 	//满行
 	public static const FULL:String = "full";
+	//失败
+	public static const FAIL:String = "fail";
 	//数据
 	public var data:*;
 	public function TetrisEvent(type:String, data:*=null, bubbles:Boolean = false, cancelable:Boolean = false)
