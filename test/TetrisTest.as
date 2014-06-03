@@ -20,31 +20,90 @@ public class TetrisTest extends Sprite
 	private var delay:int;
 	private var startX:Number;
 	private var startY:Number;
+	//方块的高宽
 	private var rectWidth:Number;
 	private var rectHeight:Number;
+	//方块间隔
 	private var gap:int;
+	//是否暂停
+	private var isPause:Boolean;
+	private var rows:int;
+	private var columns:int;
+	//效果计时器
+	private var effectTimer:Timer;
+	//闪烁次数
+	private var effectTimes:int;
+	private var effectCurTimes:int;
+	//满行数组
+	private var fullRowList:Array;
 	public function TetrisTest() 
 	{
+		this.rows = 18;
+		this.columns = 12;
 		this.startX = 0;
 		this.startY = 0;
 		this.rectWidth = 20;
 		this.rectHeight = 20;
 		this.gap = 2;
+		this.effectTimes = 7;
+		this.effectCurTimes = 0;
 		//默认一秒钟
 		this.delay = 500;
-		
 		this.timer = new Timer(this.delay);
 		this.timer.addEventListener(TimerEvent.TIMER, timerHandler);
 		this.timer.start();
 		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownHandler);
 		
-		this.tetris = new Tetris(18, 12);
+		this.tetris = new Tetris(this.rows, this.columns);
 		//this.tetris.createTetrominoesVo(Random.randint(0, 6));
 		this.tetris.createTetrominoesVo(0);
 		this.tetris.addEventListener(TetrisEvent.TETRIS_DOWN, tetrisDownHandler);
+		this.tetris.addEventListener(TetrisEvent.FULL, fullHandler);
 		this.tetris.down();
 		this.draw();
+	}
+	
+	private function fullHandler(e:TetrisEvent):void 
+	{
+		this.fullRowList = e.data as Array;
+		var length:int = this.fullRowList.length;
+		this.isPause = true;
+		//出消除效果
+		this.effectTimer = new Timer(50);
+		this.effectTimer.addEventListener(TimerEvent.TIMER, effectTimerHandler);
+		this.effectTimer.start();
+	}
+	
+	private function effectTimerHandler(e:TimerEvent):void 
+	{
+		this.effectCurTimes++;
+		var node:NodeVo;
+		var arr:Array;
+		for (var i:int = 0; i < length; i += 1)
+		{
+			arr = this.fullRowList[i];
+			var len:int = arr.length;
+			for (var j:int = 0; j < len; j += 1) 
+			{
+				var row:int = arr[j][0];
+				var column:int = arr[j][1];
+				var color:int = arr[j][2];
+				var y:int = this.startY + (this.rectHeight + this.gap) * row;
+				var x:int = this.startX + (this.rectWidth + this.gap) * column;
+				if (this.effectCurTimes % 2 == 1) color = 0xFFFFFF;
+				this.graphics.beginFill(color);
+				this.graphics.drawRect(x, y, this.rectWidth, this.rectHeight);
+				this.graphics.endFill();
+			}
+		}
+		if (this.effectCurTimes == this.effectTimes)
+		{
+			this.effectTimer.removeEventListener(TimerEvent.TIMER, effectTimerHandler);
+			this.effectTimer.stop();
+			this.effectCurTimes = 0;
+			this.isPause = false;
+		}
 	}
 	
 	private function tetrisDownHandler(event:TetrisEvent):void
@@ -55,6 +114,7 @@ public class TetrisTest extends Sprite
 	
 	private function onKeyDownHandler(evt:KeyboardEvent):void 
 	{
+		if (this.isPause) return;
 		switch (evt.keyCode)
 		{
 			case Keyboard.A:
@@ -82,8 +142,8 @@ public class TetrisTest extends Sprite
 	
 	private function timerHandler(event:TimerEvent):void 
 	{
+		if (this.isPause) return;
 		this.tetris.down();
-		//this.tetris.print();
 		this.draw();
 	}
 	
@@ -92,6 +152,7 @@ public class TetrisTest extends Sprite
 	 */
 	public function draw():void
 	{
+		if (this.isPause) return;
 		this.graphics.clear();
 		if (this.tetris && this.tetris.map)
 		{
@@ -108,7 +169,6 @@ public class TetrisTest extends Sprite
 				var len:int = arr.length;
 				for (var j:int = 0; j < len; j += 1)
 				{
-					//value = arr[j];
 					node = arr[j];
 					if (node.color == 0) color = 0xFFFFFF;
 					else color = node.color;

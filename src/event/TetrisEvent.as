@@ -7,9 +7,15 @@ import flash.events.Event;
  */
 public class TetrisEvent extends Event 
 {
+	//下落完成
 	public static const TETRIS_DOWN:String = "tetrisDown";
-	public function TetrisEvent(type:String, bubbles:Boolean = false, cancelable:Boolean = false)
+	//满行
+	public static const FULL:String = "full";
+	//数据
+	public var data:*;
+	public function TetrisEvent(type:String, data:*=null, bubbles:Boolean = false, cancelable:Boolean = false)
 	{ 
+		this.data = data;
 		super(type, bubbles, cancelable);
 	} 
 	

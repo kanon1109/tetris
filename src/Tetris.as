@@ -229,6 +229,61 @@ public class Tetris extends EventDispatcher
 		return false;
 	}
 	
+	/**
+	 * 判断全行
+	 * @return	为满数据行的列表 格式[[行数，列数，颜色],[行数，列数，颜色]]
+	 */
+	private function checkFullLine():Array
+	{
+		var fullRowsList:Array = [];
+		var node:NodeVo;
+		var color:uint;
+		for (var i:int = 0; i < this.rows; i += 1) 
+		{
+			var isFull:Boolean = true;
+			//临时数组
+			var temp:Array = [];
+			for (var j:int = 0; j < this.columns; j += 1)
+			{
+				node = this._map[i][j];
+				if (node.color == 0) color = 0xFFFFFF;
+				else color = node.color;
+				temp.push([i, j, color]);
+				if (node.status != NodeVo.STABLE)
+				{
+					isFull = false;
+					break;
+				}
+			}
+			if (isFull) fullRowsList.push(temp);
+		}
+		return fullRowsList;
+	}
+	
+	/**
+	 * 消除并下落
+	 * @param	fullRowsList	被消除的数据列表
+	 */
+	private function removeFullLine(fullRowsList:Array):void
+	{
+		if (!fullRowsList) return;
+		var length:int = fullRowsList.length;
+		var node:NodeVo;
+		for (var i:int = 0; i < length; i += 1) 
+		{
+			var arr:Array = fullRowsList[i];
+			var len:int = arr.length;
+			for (var j:int = 0; j < len; j += 1) 
+			{
+				var row:int = arr[j][0];
+				var column:int = arr[j][1];
+				node = this._map[row][column];
+				node.status = NodeVo.EMPTY;
+				node.color = 0;
+			}
+		}
+	}
+	
 	/******************public**********************************/
 	/**
 	 * 向下
@@ -241,6 +296,13 @@ public class Tetris extends EventDispatcher
 		{
 			//固定下落方块数据
 			this.fixedTetrominoes(this.tetrominoesVo);
+			//判断是否摆满
+			var rowLineAry:Array = this.checkFullLine();
+			if (rowLineAry.length > 0)
+			{
+				this.dispatchEvent(new TetrisEvent(TetrisEvent.FULL, rowLineAry));
+				this.removeFullLine(rowLineAry);
+			}
 			//将地图数据设置成长久类型数据，每帧不擦除数据。
 			this.dispatchEvent(new TetrisEvent(TetrisEvent.TETRIS_DOWN));
 		}
@@ -280,52 +342,41 @@ public class Tetris extends EventDispatcher
 	{
 		if (!this.tetrominoesVo) return;
 		this.tetrominoesVo.dir++;
-		if (this.tetrominoesVo.down >= this.rows)
-		{
-			//底部变形时超过边界时 不允许变形
-			this.tetrominoesVo.dir--;
-		}
-		this.updateTetrominoes(this.tetrominoesVo);
-		
-		/*var length:int = this.tetrominoesVo.map.length;
-		var node:NodeVo;
-		var rightNode:NodeVo;
-		var leftNode:NodeVo;
-		for (var i:int = 0; i < length; i += 1)
-		{
-			if (this._map[this.tetrominoesVo.posY + i] != null && 
-				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.left] != null &&
-				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.right] != null &&
-				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.right + 1] != null &&
-				this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.left - 1] != null)
-			{
-				node = this._map[this.tetrominoesVo.posY + i][column];
-				if (node.status == NodeVo.UNSTABLE)
-				{
-					rightNode = this._map[this.tetrominoesVo.posY + i][column + 1];
-					leftNode = this._map[this.tetrominoesVo.posY + i][column - 1];
-					if (rightNode.status == NodeVo.STABLE)
-					{
-						
-					}
-				}
-			}
-		}*/
-		
-		if (this.tetrominoesVo.left < 0)
+		if (this.tetrominoesVo.left < 0 || 
+			this.tetrominoesVo.right >= this.columns || 
+			this.tetrominoesVo.down >= this.rows)
 		{
 			//左边变形时超过边界
-			//如果旋转后位置超过边界则加上相差的位置 并重新渲染
-			this.tetrominoesVo.posX += 
-				Math.abs(this.tetrominoesVo.left);
-			this.updateTetrominoes(this.tetrominoesVo);
+			this.tetrominoesVo.dir--;
 		}
-		if (this.tetrominoesVo.right >= this.columns)
+		else
 		{
-			//右边变形时超过边界
-			this.tetrominoesVo.posX -= Math.abs(this.columns - 1 - this.tetrominoesVo.right);
-			this.updateTetrominoes(this.tetrominoesVo);
+			//判断旋转后是否会与之前有数据的节点相接触。
+			var length:int = this.tetrominoesVo.map.length;
+			var node:NodeVo;
+			for (var i:int = 0; i < length; i += 1)
+			{
+				var rowAry:Array = this.tetrominoesVo.map[i];
+				var len:int = rowAry.length;
+				var isBreak:Boolean;
+				for (var j:int = 0; j < len; j += 1)
+				{
+					if (this._map[this.tetrominoesVo.posY + i] != null &&
+						this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.posX + j] != null)
+					{
+						node = this._map[this.tetrominoesVo.posY + i][this.tetrominoesVo.posX + j];
+						if (rowAry[j] == 1 && node.status == NodeVo.STABLE)
+						{
+							this.tetrominoesVo.dir--;
+							isBreak = true;
+							break;
+						}
+					}
+					if (isBreak) break;
+				}
+			}
 		}
+		this.updateTetrominoes(this.tetrominoesVo);
 	}
 	
 	/**
